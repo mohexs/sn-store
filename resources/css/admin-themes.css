@@ -1,0 +1,85 @@
+html[data-admin-theme="rose"] {
+    --admin-brand-50: 255 241 242;
+    --admin-brand-100: 255 228 230;
+    --admin-brand-200: 254 205 211;
+    --admin-brand-300: 253 164 175;
+    --admin-brand-400: 251 113 133;
+    --admin-brand-500: 244 63 94;
+    --admin-brand-600: 225 29 72;
+    --admin-brand-700: 190 18 60;
+    --admin-brand-800: 159 18 57;
+    --admin-brand-900: 136 19 55;
+    --admin-brand-950: 76 5 25;
+}
+
+html[data-admin-theme="blue"] {
+    --admin-brand-50: 239 246 255;
+    --admin-brand-100: 219 234 254;
+    --admin-brand-200: 191 219 254;
+    --admin-brand-300: 147 197 253;
+    --admin-brand-400: 96 165 250;
+    --admin-brand-500: 59 130 246;
+    --admin-brand-600: 37 99 235;
+    --admin-brand-700: 29 78 216;
+    --admin-brand-800: 30 64 175;
+    --admin-brand-900: 30 58 138;
+    --admin-brand-950: 23 37 84;
+}
+
+html[data-admin-theme="emerald"] {
+    --admin-brand-50: 236 253 245;
+    --admin-brand-100: 209 250 229;
+    --admin-brand-200: 167 243 208;
+    --admin-brand-300: 110 231 183;
+    --admin-brand-400: 52 211 153;
+    --admin-brand-500: 16 185 129;
+    --admin-brand-600: 5 150 105;
+    --admin-brand-700: 4 120 87;
+    --admin-brand-800: 6 95 70;
+    --admin-brand-900: 6 78 59;
+    --admin-brand-950: 2 44 34;
+}
+
+html[data-admin-theme="violet"] {
+    --admin-brand-50: 245 243 255;
+    --admin-brand-100: 237 233 254;
+    --admin-brand-200: 221 214 254;
+    --admin-brand-300: 196 181 253;
+    --admin-brand-400: 167 139 250;
+    --admin-brand-500: 139 92 246;
+    --admin-brand-600: 124 58 237;
+    --admin-brand-700: 109 40 217;
+    --admin-brand-800: 91 33 182;
+    --admin-brand-900: 76 29 149;
+    --admin-brand-950: 46 16 101;
+}
+
+html[data-admin-theme="amber"] {
+    --admin-brand-50: 255 251 235;
+    --admin-brand-100: 254 243 199;
+    --admin-brand-200: 253 230 138;
+    --admin-brand-300: 252 211 77;
+    --admin-brand-400: 251 191 36;
+    --admin-brand-500: 245 158 11;
+    --admin-brand-600: 217 119 6;
+    --admin-brand-700: 180 83 9;
+    --admin-brand-800: 146 64 14;
+    --admin-brand-900: 120 53 15;
+    --admin-brand-950: 69 26 3;
+}
+
+html[data-admin-theme="slate"] {
+    --admin-brand-50: 248 250 252;
+    --admin-brand-100: 241 245 249;
+    --admin-brand-200: 226 232 240;
+    --admin-brand-300: 203 213 225;
+    --admin-brand-400: 148 163 184;
+    --admin-brand-500: 100 116 139;
+    --admin-brand-600: 71 85 105;
+    --admin-brand-700: 51 65 85;
+    --admin-brand-800: 30 41 59;
+    --admin-brand-900: 15 23 42;
+    --admin-brand-950: 2 6 23;
+}
+
+html[data-admin-theme] :focus-visible { outline-color: rgb(var(--admin-brand-600)); }

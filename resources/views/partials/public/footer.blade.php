@@ -1,0 +1,9 @@
+<footer id="kontak" class="border-t border-slate-200 bg-white">
+    <div class="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1.4fr] lg:px-8">
+        <div><a href="{{ route('home') }}" class="text-2xl font-extrabold tracking-tight">sn<span class="text-rose-700">-store<span class="ml-1">+</span></span></a><p class="mt-4 max-w-xs text-sm leading-7 text-slate-500">Teman untuk setiap langkah sehat Anda. Temukan obat, vitamin, dan alat kesehatan untuk kebutuhan Anda dan keluarga.</p><span class="mt-4 inline-block rounded-full bg-rose-50 px-3 py-1 text-xs text-rose-700">Sehat dimulai dari kepedulian.</span></div>
+        <div><h2 class="mb-5 text-sm font-bold">Jelajahi</h2><div class="flex flex-col gap-3 text-sm text-slate-500"><a href="{{ route('home') }}">Beranda</a><a href="#produk">Semua produk</a><a href="#kategori">Kategori produk</a><a href="{{ route('login') }}">Akun saya</a></div></div>
+        <div><h2 class="mb-5 text-sm font-bold">Kategori</h2><div class="flex flex-col gap-3 text-sm text-slate-500">@foreach (['Obat-obatan', 'Vitamin & Suplemen', 'Alat Kesehatan', 'Perawatan Diri'] as $category)<a href="#produk" @click="category = @js($category)">{{ $category }}</a>@endforeach</div></div>
+        <div><h2 class="mb-5 text-sm font-bold">Hubungi kami</h2><p class="text-sm leading-7 text-slate-500">Informasi kontak toko akan tersedia di sini.</p><p class="mt-4 text-xs leading-6 text-slate-400">Website demonstrasi. Seluruh produk, harga, dan ilustrasi merupakan data dummy.</p></div>
+    </div>
+    <div class="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 border-t border-slate-100 px-5 py-5 text-xs text-slate-400 lg:px-8"><p>© {{ date('Y') }} SN Store. Semua hak dilindungi.</p><p>Dibuat dengan kepedulian untuk hidup lebih sehat.</p></div>
+</footer>
