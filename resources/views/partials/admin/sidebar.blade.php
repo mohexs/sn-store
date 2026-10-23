@@ -8,16 +8,27 @@
         <nav class="flex flex-col gap-1.5" aria-label="Menu utama">
             @foreach ([
                 ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => 'dashboard', 'pattern' => 'dashboard'],
-                ['label' => 'Kategori', 'icon' => 'category', 'route' => 'admin.categories.index', 'pattern' => 'admin.categories.*'],
-                ['label' => 'Produk', 'icon' => 'product', 'route' => 'admin.products.index', 'pattern' => 'admin.products.*'],
+                ['label' => 'Kategori', 'icon' => 'category', 'route' => 'admin.categories.index', 'pattern' => 'admin.categories.*', 'permission' => 'view categories'],
+                ['label' => 'Produk', 'icon' => 'product', 'route' => 'admin.products.index', 'pattern' => 'admin.products.*', 'permission' => 'view products'],
                 ['label' => 'Promosi', 'icon' => 'promotion', 'route' => null],
-                ['label' => 'Transaksi', 'icon' => 'transaction', 'route' => null],
+                ['label' => 'Transaksi', 'icon' => 'transaction', 'route' => null, 'permission' => 'view transactions'],
                 ['label' => 'Penghasilan', 'icon' => 'income', 'route' => null],
-                ['label' => 'Laporan', 'icon' => 'report', 'route' => null],
-                ['label' => 'User', 'icon' => 'users', 'route' => null],
-                ['label' => 'Tema', 'icon' => 'theme', 'route' => 'admin.themes.index', 'pattern' => 'admin.themes.*'],
+                ['label' => 'Laporan', 'icon' => 'report', 'route' => 'admin.reports.index', 'pattern' => 'admin.reports.*', 'permission' => 'view reports'],
+                ['label' => 'User', 'icon' => 'users', 'route' => 'admin.users.index', 'pattern' => 'admin.users.*', 'permission' => 'manage customers'],
+                ['label' => 'Akun Admin', 'icon' => 'shield', 'route' => 'admin.admin-accounts.index', 'pattern' => 'admin.admin-accounts.*', 'permission' => 'manage admin accounts'],
+                ['label' => 'Tema', 'icon' => 'theme', 'route' => 'admin.themes.index', 'pattern' => 'admin.themes.*', 'permission' => 'view themes'],
             ] as $item)
-                @if ($item['route'])
+                @continue(isset($item['permission']) && ! auth()->user()->can($item['permission']))
+                @if ($item['label'] === 'Transaksi')
+                    <div x-data="{ expanded: {{ request()->routeIs('admin.transactions.*') ? 'true' : 'false' }} }">
+                        <button type="button" @click="expanded = !expanded" :aria-expanded="expanded" aria-controls="transaction-submenu" @class(['flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition', 'bg-brand-50 text-brand-700' => request()->routeIs('admin.transactions.*'), 'text-slate-600 hover:bg-slate-50' => ! request()->routeIs('admin.transactions.*')])><x-admin.icon name="transaction" /><span class="flex-1">Transaksi</span><span aria-hidden="true" x-text="expanded ? '−' : '+'"></span></button>
+                        <div id="transaction-submenu" x-show="expanded" x-cloak class="ml-5 mt-2 flex flex-col gap-1 border-l border-slate-200 pl-3">
+                            @foreach (['picking' => 'Picking Barang', 'processing' => 'Input Qty Proses', 'packaging' => 'Packaging', 'shipping' => 'Proses Pengiriman'] as $stage => $label)
+                                <a href="{{ route('admin.transactions.index', ['stage' => $stage]) }}" @if (request()->routeIs('admin.transactions.index') && request()->route('stage', 'picking') === $stage) aria-current="page" @endif @class(['rounded-lg px-3 py-2.5 text-xs font-semibold transition', 'bg-brand-50 text-brand-700' => request()->routeIs('admin.transactions.index') && request()->route('stage', 'picking') === $stage, 'text-slate-500 hover:bg-slate-50' => !(request()->routeIs('admin.transactions.index') && request()->route('stage', 'picking') === $stage)])>{{ $label }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @elseif ($item['route'])
                     <a href="{{ route($item['route']) }}" @if (request()->routeIs($item['pattern'])) aria-current="page" @endif @class(['flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition', 'bg-brand-50 text-brand-700' => request()->routeIs($item['pattern']), 'text-slate-600 hover:bg-slate-50' => ! request()->routeIs($item['pattern'])])><x-admin.icon :name="$item['icon']" /><span class="flex-1">{{ $item['label'] }}</span>@if (request()->routeIs($item['pattern']))<span class="h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden="true"></span>@endif</a>
                 @else
                     <button type="button" disabled title="Halaman {{ $item['label'] }} belum tersedia" class="flex w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-slate-400"><x-admin.icon :name="$item['icon']" /><span class="flex-1">{{ $item['label'] }}</span><span class="rounded-md bg-slate-50 px-1.5 py-0.5 text-[9px] font-medium text-slate-400">Segera</span></button>

@@ -3,7 +3,14 @@
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
-    $response->assertStatus(200);
+    $response->assertOk()
+        ->assertSee('Buat akun baru')
+        ->assertSee('action="'.route('register').'"', escape: false)
+        ->assertSee('name="name"', escape: false)
+        ->assertSee('name="email"', escape: false)
+        ->assertSee('name="password_confirmation"', escape: false)
+        ->assertSee('href="'.route('login').'"', escape: false)
+        ->assertSee('focus:border-rose-700', escape: false);
 });
 
 test('new users can register', function () {
@@ -15,5 +22,6 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('home'));
+    expect(auth()->user()->hasRole('customer'))->toBeTrue();
 });

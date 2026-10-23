@@ -47,6 +47,18 @@
             @endif
         </div>
 
+        @foreach (['phone' => 'Nomor telepon', 'address' => 'Alamat pengiriman', 'city' => 'Kota/Kabupaten', 'province' => 'Provinsi', 'postal_code' => 'Kode pos'] as $field => $label)
+            <div>
+                <x-input-label :for="$field" :value="$label" />
+                @if ($field === 'address')
+                    <textarea id="{{ $field }}" name="{{ $field }}" rows="3" maxlength="2000" autocomplete="street-address" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old($field, $user->$field) }}</textarea>
+                @else
+                    <x-text-input :id="$field" :name="$field" :type="$field === 'phone' ? 'tel' : 'text'" class="mt-1 block w-full" :value="old($field, $user->$field)" :maxlength="$field === 'phone' ? 30 : ($field === 'postal_code' ? 5 : 100)" :autocomplete="['phone' => 'tel', 'city' => 'address-level2', 'province' => 'address-level1', 'postal_code' => 'postal-code'][$field]" />
+                @endif
+                <x-input-error class="mt-2" :messages="$errors->get($field)" />
+            </div>
+        @endforeach
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

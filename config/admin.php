@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'name' => env('ADMIN_NAME', 'SN Store Admin'),
+    'email' => env('ADMIN_EMAIL'),
+    'password' => env('ADMIN_PASSWORD'),
+
     'themes' => [
         'rose' => ['name' => 'Merah SN Store', 'description' => 'Warna khas toko, hangat dan percaya diri.', 'color' => '#be123c'],
         'blue' => ['name' => 'Biru Profesional', 'description' => 'Tenang, bersih, dan mudah dibaca.', 'color' => '#1d4ed8'],

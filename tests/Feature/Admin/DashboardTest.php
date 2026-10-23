@@ -1,13 +1,16 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 it('redirects guests to login before showing the dashboard', function () {
     $this->get(route('dashboard'))->assertRedirect(route('login'));
 });
 
 it('shows the shared public catalog summary to an authenticated user', function () {
+    $this->seed(RolePermissionSeeder::class);
     $user = User::factory()->create(['name' => 'Pengelola SN Store']);
+    $user->assignRole('admin');
     $products = config('storefront.products');
     config(['storefront.products' => [$products[0], $products[1], $products[4]]]);
 
@@ -29,7 +32,9 @@ it('shows the shared public catalog summary to an authenticated user', function 
 });
 
 it('renders the dashboard empty states when the catalog is empty', function () {
+    $this->seed(RolePermissionSeeder::class);
     $user = User::factory()->create();
+    $user->assignRole('admin');
     config(['storefront.products' => []]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
@@ -42,7 +47,9 @@ it('renders the dashboard empty states when the catalog is empty', function () {
 });
 
 it('escapes account names displayed in the admin layout', function () {
+    $this->seed(RolePermissionSeeder::class);
     $user = User::factory()->create(['name' => '<script>alert("unsafe")</script>']);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 

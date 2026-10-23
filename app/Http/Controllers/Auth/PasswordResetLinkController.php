@@ -27,7 +27,7 @@ class PasswordResetLinkController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'string', 'email', 'max:255'],
         ]);
 
         // We will send the password reset link to this user. Once we have attempted
@@ -38,8 +38,10 @@ class PasswordResetLinkController extends Controller
         );
 
         return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
+                    ? back()->with('status', 'Link reset password telah dikirim. Periksa inbox atau folder spam email Anda.')
                     : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+                        ->withErrors(['email' => $status === Password::RESET_THROTTLED
+                            ? 'Tunggu sebentar sebelum meminta link reset kembali.'
+                            : 'Kami tidak menemukan akun dengan email tersebut.']);
     }
 }

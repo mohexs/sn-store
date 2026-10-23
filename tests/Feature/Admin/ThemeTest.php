@@ -7,7 +7,7 @@ it('requires login before showing theme preferences', function () {
 });
 
 it('shows theme choices with a browser preference key scoped to the signed in account', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this->actingAs($user)->get(route('admin.themes.index'));
 

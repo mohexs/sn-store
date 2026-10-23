@@ -11,7 +11,7 @@ it('requires login to access category management', function (string $method) {
 })->with(['GET', 'POST']);
 
 it('lists categories with the number of linked products and escapes content', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create(['name' => '<script>alert("unsafe")</script>']);
     Product::factory()->count(2)->for($category)->create();
 
@@ -25,7 +25,7 @@ it('lists categories with the number of linked products and escapes content', fu
 });
 
 it('stores a category with normalized whitespace', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this->actingAs($user)->post(route('admin.categories.store'), [
         'name' => '  Ibu   dan Bayi  ', 'description' => 'Kebutuhan ibu dan bayi.', 'name_key' => 'untrusted',
@@ -36,7 +36,7 @@ it('stores a category with normalized whitespace', function () {
 });
 
 it('rejects duplicate category names regardless of casing or whitespace', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Category::factory()->create(['name' => 'Perawatan Lansia']);
 
     $response = $this->actingAs($user)->post(route('admin.categories.store'), ['name' => '  perawatan   LANSIA ']);
@@ -46,7 +46,7 @@ it('rejects duplicate category names regardless of casing or whitespace', functi
 });
 
 it('rejects invalid category information', function (array $data, string $field) {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $before = Category::query()->count();
 
     $response = $this->actingAs($user)->post(route('admin.categories.store'), $data);
@@ -61,7 +61,7 @@ it('rejects invalid category information', function (array $data, string $field)
 ]);
 
 it('offers database categories in the product creation dropdown', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create(['name' => 'Kategori Baru Khusus']);
 
     $response = $this->actingAs($user)->get(route('admin.products.create'));
@@ -70,7 +70,7 @@ it('offers database categories in the product creation dropdown', function () {
 });
 
 it('selects the linked category when editing a product', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create();
     $product = Product::factory()->for($category)->create();
 
@@ -119,7 +119,7 @@ it('requires login before editing a category', function (string $method, string 
 ]);
 
 it('shows the saved category details in the edit form', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create(['description' => '<script>alert("unsafe")</script>']);
 
     $response = $this->actingAs($user)->get(route('admin.categories.edit', $category));
@@ -132,7 +132,7 @@ it('shows the saved category details in the edit form', function () {
 });
 
 it('updates category details while keeping existing products linked', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create();
     $product = Product::factory()->for($category)->create();
 
@@ -149,7 +149,7 @@ it('updates category details while keeping existing products linked', function (
 });
 
 it('allows saving a category with its existing name', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create();
 
     $response = $this->actingAs($user)->put(route('admin.categories.update', $category), [
@@ -161,7 +161,7 @@ it('allows saving a category with its existing name', function () {
 });
 
 it('rejects another category name during update regardless of case and whitespace', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Category::factory()->create(['name' => 'Kategori Terpakai']);
     $category = Category::factory()->create();
 
@@ -174,7 +174,7 @@ it('rejects another category name during update regardless of case and whitespac
 });
 
 it('rejects a blank name when updating a category', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create();
 
     $response = $this->actingAs($user)->put(route('admin.categories.update', $category), ['name' => '  ']);
@@ -184,7 +184,7 @@ it('rejects a blank name when updating a category', function () {
 });
 
 it('returns not found for a missing category', function (string $method, string $path) {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $this->actingAs($user)->call($method, $path)->assertNotFound();
 })->with([

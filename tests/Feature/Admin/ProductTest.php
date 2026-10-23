@@ -16,7 +16,7 @@ it('redirects guests before allowing access to product management', function (st
 ]);
 
 it('renders the product form with the available categories', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this->actingAs($user)->get(route('admin.products.create'));
 
@@ -28,7 +28,7 @@ it('renders the product form with the available categories', function () {
 });
 
 it('lists saved products and escapes their names', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $product = Product::factory()->create(['name' => '<script>alert("unsafe")</script>']);
 
     $response = $this->actingAs($user)->get(route('admin.products.index'));
@@ -40,7 +40,7 @@ it('lists saved products and escapes their names', function () {
 });
 
 it('renders saved product values in the edit form', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $product = Product::factory()->create();
 
     $response = $this->actingAs($user)->get(route('admin.products.edit', $product));
@@ -52,7 +52,7 @@ it('renders saved product values in the edit form', function () {
 });
 
 it('stores product details and a photo while preserving barcode leading zeros', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Storage::fake('public');
     $data = Product::factory()->make(['sku' => 'sn-vit-001', 'barcode' => '0001234567890'])->getAttributes();
     $photo = UploadedFile::fake()->image('vitamin.png', 100, 100);
@@ -77,7 +77,7 @@ it('stores product details and a photo while preserving barcode leading zeros', 
 });
 
 it('rejects incomplete product data without creating a record', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this->actingAs($user)->from(route('admin.products.create'))->post(route('admin.products.store'), []);
 
@@ -87,7 +87,7 @@ it('rejects incomplete product data without creating a record', function () {
 });
 
 it('rejects duplicate identifiers without creating another product', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $existing = Product::factory()->create(['sku' => 'SN-001', 'barcode' => '000123']);
     $data = Product::factory()->make(['sku' => 'sn-001', 'barcode' => $existing->barcode])->getAttributes();
 
@@ -101,7 +101,7 @@ it('rejects duplicate identifiers without creating another product', function ()
 });
 
 it('rejects invalid amounts and categories', function (array $invalid, string $field) {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $data = Product::factory()->make()->getAttributes();
 
     $response = $this->actingAs($user)->post(route('admin.products.store'), array_replace($data, $invalid));
@@ -119,7 +119,7 @@ it('rejects invalid amounts and categories', function (array $invalid, string $f
 ]);
 
 it('rejects unsupported or oversized photos', function (string $kind) {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Storage::fake('public');
     $data = Product::factory()->make()->getAttributes();
     $photo = match ($kind) {
@@ -136,7 +136,7 @@ it('rejects unsupported or oversized photos', function (string $kind) {
 })->with(['svg', 'size', 'dimensions']);
 
 it('updates a product with its own identifiers and keeps the existing photo', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Storage::fake('public');
     Storage::disk('public')->put('products/existing.png', 'photo');
     $product = Product::factory()->create(['photo_path' => 'products/existing.png']);
@@ -150,7 +150,7 @@ it('updates a product with its own identifiers and keeps the existing photo', fu
 });
 
 it('replaces an old photo after successfully saving a new one', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Storage::fake('public');
     Storage::disk('public')->put('products/old.png', 'old photo');
     $product = Product::factory()->create(['photo_path' => 'products/old.png']);
@@ -167,7 +167,7 @@ it('replaces an old photo after successfully saving a new one', function () {
 });
 
 it('stores a product when optional fields and photo are empty', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $data = Product::factory()->make(['description' => null, 'barcode' => null, 'rack_location' => null])->getAttributes();
 
     $response = $this->actingAs($user)->post(route('admin.products.store'), $data);
@@ -177,7 +177,7 @@ it('stores a product when optional fields and photo are empty', function () {
 });
 
 it('rejects conflicting identifiers on update and keeps the existing photo', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     Storage::fake('public');
     Storage::disk('public')->put('products/kept.png', 'existing photo');
     $other = Product::factory()->create();
