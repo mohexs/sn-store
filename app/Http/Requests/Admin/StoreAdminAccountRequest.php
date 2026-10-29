@@ -30,13 +30,18 @@ class StoreAdminAccountRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'lowercase', 'max:255', Rule::unique(User::class)],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+().\s-]+$/'],
             'password' => ['required', 'string', 'confirmed', Password::min(8), 'max:255'],
+            'role' => ['required', Rule::in([User::ADMIN_ROLE, User::TRANSACTION_PROCESSING_ADMIN_ROLE])],
         ];
     }
 
     /** @return array<string, string> */
     public function attributes(): array
     {
-        return ['name' => 'nama', 'phone' => 'nomor telepon'];
+        return [
+            'name' => 'nama',
+            'phone' => 'nomor telepon',
+            'role' => 'jenis akses',
+        ];
     }
 
     /** @return array<string, string> */
@@ -50,6 +55,8 @@ class StoreAdminAccountRequest extends FormRequest
             'email.lowercase' => 'Email harus menggunakan huruf kecil.',
             'email.unique' => 'Email sudah digunakan akun lain.',
             'phone.regex' => 'Format nomor telepon tidak valid.',
+            'role.required' => 'Pilih jenis akses admin.',
+            'role.in' => 'Jenis akses admin yang dipilih tidak valid.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ];

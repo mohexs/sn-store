@@ -20,19 +20,27 @@ it('denies customers access to admin account management', function (string $meth
 })->with([['GET', '/admin/admin-accounts'], ['GET', '/admin/admin-accounts/create'], ['POST', '/admin/admin-accounts']]);
 
 it('lists only admin accounts and escapes their names', function () {
-    $admin = User::factory()->admin()->create(['name' => '<script>admin</script>']);
+    $admin = User::factory()->admin()->create([
+        'name' => '<script>admin</script>',
+        'created_at' => '2026-03-04 15:06:00',
+    ]);
     $customer = User::factory()->create();
 
     $this->actingAs($admin)->get(route('admin.admin-accounts.index'))->assertOk()
         ->assertSee($admin->email)->assertSee($admin->name)->assertDontSee($admin->name, escape: false)
-        ->assertDontSee($customer->email)->assertSee(route('admin.admin-accounts.create'));
+        ->assertDontSee($customer->email)->assertSee(route('admin.admin-accounts.create'))
+        ->assertSee('04/03/2026');
 });
 
 it('shows the admin creation form', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->get(route('admin.admin-accounts.create'))->assertOk()
-        ->assertSee('Konfirmasi password')->assertSee(route('admin.admin-accounts.store'));
+        ->assertSee('Konfirmasi password')
+        ->assertSee('name="role"', escape: false)
+        ->assertSee('Administrator penuh')
+        ->assertSee('Admin pemrosesan transaksi')
+        ->assertSee(route('admin.admin-accounts.store'));
 });
 
 it('creates an admin with a hashed password while keeping the current admin logged in', function () {
@@ -42,6 +50,7 @@ it('creates an admin with a hashed password while keeping the current admin logg
     $this->actingAs($admin)->post(route('admin.admin-accounts.store'), [
         'name' => 'Admin Baru', 'email' => 'newadmin@example.test', 'phone' => '08123456789',
         'password' => 'secure-password123', 'password_confirmation' => 'secure-password123',
+        'role' => User::ADMIN_ROLE,
         'is_admin' => false, 'email_verified_at' => now(),
     ])->assertRedirect(route('admin.admin-accounts.index'))->assertSessionHasNoErrors()->assertSessionHas('status');
 
@@ -59,6 +68,7 @@ it('allows creating an admin without a phone number and logging in with that acc
     $this->actingAs($admin)->post(route('admin.admin-accounts.store'), [
         'name' => 'Admin Tanpa Telepon', 'email' => 'admin-login@example.test',
         'password' => 'secure-password123', 'password_confirmation' => 'secure-password123',
+        'role' => User::ADMIN_ROLE,
     ])->assertRedirect()->assertSessionHasNoErrors();
     $this->post(route('logout'));
 
@@ -68,12 +78,41 @@ it('allows creating an admin without a phone number and logging in with that acc
     $this->get(route('admin.admin-accounts.index'))->assertOk();
 });
 
+it('creates a transaction processing admin with restricted permissions', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post(route('admin.admin-accounts.store'), [
+        'name' => 'Admin Pemrosesan',
+        'email' => 'processor@example.test',
+        'password' => 'secure-password123',
+        'password_confirmation' => 'secure-password123',
+        'role' => User::TRANSACTION_PROCESSING_ADMIN_ROLE,
+    ])->assertRedirect(route('admin.admin-accounts.index'))->assertSessionHasNoErrors();
+
+    $created = User::query()->where('email', 'processor@example.test')->firstOrFail();
+    expect($created->is_admin)->toBeFalse()
+        ->and($created->hasRole(User::TRANSACTION_PROCESSING_ADMIN_ROLE))->toBeTrue();
+    $this->assertDatabaseHas('model_has_roles', [
+        'model_id' => $created->id,
+        'model_type' => User::class,
+    ]);
+
+    $this->actingAs($admin)->get(route('admin.admin-accounts.index'))
+        ->assertOk()
+        ->assertSee('processor@example.test')
+        ->assertSee('Admin pemrosesan transaksi');
+    $this->actingAs($created)->get(route('dashboard'))->assertOk();
+    $this->get(route('admin.promotions.index'))->assertForbidden();
+});
+
 it('rejects invalid admin details without creating an account', function (array $invalid, string $field) {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->post(route('admin.admin-accounts.store'), array_replace([
         'name' => 'New Admin', 'email' => 'newadmin@example.test',
         'password' => 'secure-password123', 'password_confirmation' => 'secure-password123',
+        'role' => User::ADMIN_ROLE,
     ], $invalid))->assertSessionHasErrors($field);
 
     $this->assertDatabaseCount('users', 1);
@@ -86,6 +125,7 @@ it('rejects invalid admin details without creating an account', function (array 
     'invalid phone' => [['phone' => 'not a number'], 'phone'],
     'long phone' => [['phone' => str_repeat('1', 31)], 'phone'],
     'missing password' => [['password' => ''], 'password'],
+    'unknown role' => [['role' => 'super-admin'], 'role'],
     'short password' => [['password' => 'short', 'password_confirmation' => 'short'], 'password'],
     'long password' => [['password' => str_repeat('a', 256), 'password_confirmation' => str_repeat('a', 256)], 'password'],
     'mismatched confirmation' => [['password_confirmation' => 'different-password'], 'password'],

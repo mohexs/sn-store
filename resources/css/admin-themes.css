@@ -83,3 +83,76 @@ html[data-admin-theme="slate"] {
 }
 
 html[data-admin-theme] :focus-visible { outline-color: rgb(var(--admin-brand-600)); }
+
+html[data-admin-mode="dark"] {
+    color-scheme: dark;
+    --admin-dark-surface: 20 29 42;
+    --admin-dark-subtle: 27 39 54;
+    --admin-dark-border: 51 65 85;
+    --admin-dark-text: 226 232 240;
+    --admin-dark-muted: 148 163 184;
+}
+
+html[data-admin-mode="dark"] body {
+    background-color: #0b1220;
+    color: rgb(var(--admin-dark-text));
+}
+
+html[data-admin-mode="dark"] .bg-white,
+html[data-admin-mode="dark"] [class~="bg-white/95"] {
+    background-color: rgb(var(--admin-dark-surface));
+}
+
+html[data-admin-mode="dark"] .bg-slate-50,
+html[data-admin-mode="dark"] .bg-slate-100 {
+    background-color: rgb(var(--admin-dark-subtle));
+}
+
+html[data-admin-mode="dark"] .text-slate-950,
+html[data-admin-mode="dark"] .text-slate-900,
+html[data-admin-mode="dark"] .text-slate-800,
+html[data-admin-mode="dark"] .text-slate-700,
+html[data-admin-mode="dark"] .text-slate-600 {
+    color: rgb(var(--admin-dark-text));
+}
+
+html[data-admin-mode="dark"] .text-slate-500,
+html[data-admin-mode="dark"] .text-slate-400 {
+    color: rgb(var(--admin-dark-muted));
+}
+
+html[data-admin-mode="dark"] .border-slate-50,
+html[data-admin-mode="dark"] .border-slate-100,
+html[data-admin-mode="dark"] .border-slate-200,
+html[data-admin-mode="dark"] .border-slate-300,
+html[data-admin-mode="dark"] [class~="border-slate-200/80"] {
+    border-color: rgb(var(--admin-dark-border));
+}
+
+html[data-admin-mode="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-admin-mode="dark"] select,
+html[data-admin-mode="dark"] textarea {
+    border-color: rgb(var(--admin-dark-border));
+    background-color: rgb(var(--admin-dark-subtle));
+    color: rgb(var(--admin-dark-text));
+}
+
+html[data-admin-mode="dark"] input::placeholder,
+html[data-admin-mode="dark"] textarea::placeholder {
+    color: rgb(var(--admin-dark-muted));
+}
+
+html[data-admin-mode="dark"] input[type="file"]::file-selector-button {
+    background-color: rgb(var(--admin-dark-border));
+    color: rgb(var(--admin-dark-text));
+}
+
+html[data-admin-mode="dark"] [class~="hover:bg-slate-50"]:hover,
+html[data-admin-mode="dark"] [class~="hover:bg-slate-100"]:hover {
+    background-color: rgb(51 65 85 / 60%);
+}
+
+html[data-admin-mode="dark"] [class~="shadow-slate-200/20"],
+html[data-admin-mode="dark"] [class~="shadow-slate-200/50"] {
+    --tw-shadow-color: rgb(0 0 0 / 20%);
+}

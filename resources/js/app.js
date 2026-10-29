@@ -1,11 +1,15 @@
 import Alpine from 'alpinejs';
 import adminShell from './admin';
 import adminThemePicker from './admin-theme';
+import initializeDateInputs from './date-inputs';
+import initializeDeleteConfirmation from './delete-confirmation';
 import productForm from './product-form';
 
 Alpine.data('adminShell', adminShell);
 Alpine.data('adminThemePicker', adminThemePicker);
 Alpine.data('productForm', productForm);
+initializeDateInputs();
+initializeDeleteConfirmation();
 
 Alpine.data('storefront', () => ({
     query: '', category: 'Semua', cart: [], cartOpen: false, notice: '', noticeTimer: null,
@@ -28,5 +32,3 @@ Alpine.data('storefront', () => ({
 
 window.Alpine = Alpine;
 Alpine.start();
-
-

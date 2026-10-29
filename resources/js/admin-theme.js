@@ -5,8 +5,10 @@ const validTheme = theme => allowed.includes(theme) ? theme : 'rose';
 function applyTheme(theme) {
     const selected = validTheme(theme);
     root.dataset.adminTheme = selected;
-    const color = getComputedStyle(root).getPropertyValue('--admin-brand-700').trim();
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', `rgb(${color})`);
+    const color = root.dataset.adminMode === 'dark'
+        ? '#0b1220'
+        : `rgb(${getComputedStyle(root).getPropertyValue('--admin-brand-700').trim()})`;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
     return selected;
 }
 

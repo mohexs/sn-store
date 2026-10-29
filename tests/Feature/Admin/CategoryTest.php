@@ -28,11 +28,26 @@ it('stores a category with normalized whitespace', function () {
     $user = User::factory()->admin()->create();
 
     $response = $this->actingAs($user)->post(route('admin.categories.store'), [
-        'name' => '  Ibu   dan Bayi  ', 'description' => 'Kebutuhan ibu dan bayi.', 'name_key' => 'untrusted',
+        'name' => '  Ibu   dan Bayi  ', 'description' => 'Kebutuhan ibu dan bayi.',
+        'name_key' => 'untrusted', 'slug' => 'slug-manual',
     ]);
 
     $response->assertRedirect(route('admin.categories.index'))->assertSessionHasNoErrors();
-    $this->assertDatabaseHas('categories', ['name' => 'Ibu dan Bayi', 'name_key' => 'ibu dan bayi', 'description' => 'Kebutuhan ibu dan bayi.']);
+    $this->assertDatabaseHas('categories', [
+        'name' => 'Ibu dan Bayi', 'name_key' => 'ibu dan bayi',
+        'slug' => 'ibu-dan-bayi', 'description' => 'Kebutuhan ibu dan bayi.',
+    ]);
+});
+
+it('adds a numeric suffix when category names produce the same slug', function () {
+    $user = User::factory()->admin()->create();
+
+    $response = $this->actingAs($user)->post(route('admin.categories.store'), [
+        'name' => 'Vitamin-Suplemen',
+    ]);
+
+    $response->assertRedirect(route('admin.categories.index'))->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('categories', ['name' => 'Vitamin-Suplemen', 'slug' => 'vitamin-suplemen-2']);
 });
 
 it('rejects duplicate category names regardless of casing or whitespace', function () {
@@ -101,6 +116,19 @@ it('preserves legacy product categories during migration and rollback', function
         expect($categoryId)->not->toBeNull();
         $this->assertDatabaseHas('products', ['sku' => 'LEGACY-01', 'category_id' => $categoryId, 'price' => 12500]);
 
+        DB::table('categories')->insert([
+            'name' => 'Vitamin-Suplemen',
+            'name_key' => 'vitamin-suplemen',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $slugMigration = require database_path('migrations/2026_10_28_151420_add_slug_to_categories_table.php');
+        $slugMigration->up();
+
+        $this->assertDatabaseHas('categories', ['name' => 'Kategori Lama Khusus', 'slug' => 'kategori-lama-khusus']);
+        $this->assertDatabaseHas('categories', ['name' => 'Vitamin-Suplemen', 'slug' => 'vitamin-suplemen-2']);
+
+        $slugMigration->down();
         $migration->down();
 
         $this->assertDatabaseHas('products', ['sku' => 'LEGACY-01', 'category' => 'Kategori Lama Khusus']);
@@ -128,6 +156,7 @@ it('shows the saved category details in the edit form', function () {
         ->assertViewIs('pages.admin.categories.edit')
         ->assertSee($category->name)
         ->assertSee($category->description)
+        ->assertDontSee('name="slug"')
         ->assertDontSee($category->description, escape: false);
 });
 
@@ -137,13 +166,15 @@ it('updates category details while keeping existing products linked', function (
     $product = Product::factory()->for($category)->create();
 
     $response = $this->actingAs($user)->put(route('admin.categories.update', $category), [
-        'name' => '  Kategori   Diperbarui  ', 'description' => 'Deskripsi baru.', 'name_key' => 'untrusted',
+        'name' => '  Kategori   Diperbarui  ', 'description' => 'Deskripsi baru.',
+        'name_key' => 'untrusted', 'slug' => 'slug-manual',
     ]);
 
     $response->assertRedirect(route('admin.categories.index'))->assertSessionHasNoErrors();
     $this->assertDatabaseHas('categories', [
         'id' => $category->id, 'name' => 'Kategori Diperbarui',
-        'name_key' => 'kategori diperbarui', 'description' => 'Deskripsi baru.',
+        'name_key' => 'kategori diperbarui', 'slug' => 'kategori-diperbarui',
+        'description' => 'Deskripsi baru.',
     ]);
     expect($product->fresh()->category->name)->toBe('Kategori Diperbarui');
 });

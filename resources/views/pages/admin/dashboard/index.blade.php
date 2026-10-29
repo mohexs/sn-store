@@ -4,8 +4,18 @@
 @section('content')
 <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div><p class="mb-1 text-[10px] font-bold uppercase tracking-[.2em] text-brand-700">Ringkasan toko</p><h1 class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Dashboard</h1><p class="mt-2 text-sm text-slate-500">Pantau katalog dan perkembangan toko Anda dalam satu tempat.</p></div>
-    <span class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500"><x-admin.icon name="calendar" size="h-4 w-4" />{{ now()->locale('id')->translatedFormat('d F Y') }}</span>
+    <span class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500"><x-admin.icon name="calendar" size="h-4 w-4" />{{ now('Asia/Makassar')->format('d/m/Y') }}</span>
 </div>
+
+<section aria-labelledby="dashboard-filter-title" class="mb-6 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/20 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="dashboard-filter-title" class="text-sm font-bold text-slate-900">Filter periode</h2><p class="mt-1.5 text-xs text-slate-400">Penghasilan menghitung pesanan lunas; jumlah pesanan mencakup semua status.</p></div><a href="{{ route('dashboard') }}" class="text-xs font-semibold text-brand-700 hover:text-brand-900">Hari ini</a></div>
+    @if ($errors->any())<div role="alert" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-6 text-rose-700"><ul class="list-disc pl-4">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+    <form method="GET" action="{{ route('dashboard') }}" class="mt-5 flex flex-wrap items-end gap-4">
+        <div class="min-w-[150px] flex-1"><x-admin.form-input name="start_date" label="Tanggal mulai" type="date" :value="$filters['start_date']" :required="true" /></div>
+        <div class="min-w-[150px] flex-1"><x-admin.form-input name="end_date" label="Tanggal akhir" type="date" :value="$filters['end_date']" :required="true" /></div>
+        <button type="submit" class="rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-800">Terapkan filter</button>
+    </form>
+</section>
 
 <section aria-label="Selamat datang" class="relative mb-6 overflow-hidden rounded-2xl bg-brand-700 px-6 py-7 text-white sm:px-8">
     <div class="pointer-events-none absolute -bottom-28 -right-4 h-80 w-80 rounded-full border-[42px] border-white/5" aria-hidden="true"></div><div class="pointer-events-none absolute -right-12 -top-36 h-80 w-80 rounded-full border border-white/10" aria-hidden="true"></div>
@@ -15,18 +25,17 @@
 <section aria-label="Statistik toko" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <x-admin.stat-card label="Total produk" :value="$productCount" description="Produk dalam katalog demo" icon="product" :highlight="true" />
     <x-admin.stat-card label="Kategori produk" :value="$categoryCount" description="Kategori dalam katalog" icon="category" />
-    <x-admin.stat-card label="Total transaksi" value="—" description="Pencatatan belum tersedia" icon="transaction" />
-    <x-admin.stat-card label="Total penghasilan" value="—" description="Pencatatan belum tersedia" icon="income" />
+    <x-admin.stat-card label="Jumlah pesanan" :value="number_format($orderCount, 0, ',', '.')" :description="\Illuminate\Support\Carbon::parse($filters['start_date'])->format('d/m/Y').' — '.\Illuminate\Support\Carbon::parse($filters['end_date'])->format('d/m/Y')" icon="transaction" />
+    <x-admin.stat-card label="Total penghasilan" :value="'Rp'.number_format($revenueMinor / 100, 2, ',', '.')" description="Pesanan lunas pada periode terpilih" icon="income" />
 </section>
 
 <div class="mt-6 grid items-stretch gap-6 xl:grid-cols-3">
     <section aria-labelledby="sales-title" class="flex min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/20 sm:p-6 xl:col-span-2">
-        <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="sales-title" class="text-sm font-bold text-slate-900">Ringkasan penjualan</h2><p class="mt-1.5 text-xs text-slate-400">Gambaran performa transaksi toko Anda.</p></div><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-medium text-slate-500">Belum terhubung</span></div>
-        <div class="relative mt-6 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-200 bg-slate-50/40 px-5 py-8 text-center">
-            <div class="pointer-events-none absolute inset-x-6 bottom-8 top-8 flex flex-col justify-between" aria-hidden="true"><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div></div>
-            <div class="relative max-w-xs rounded-2xl bg-white/95 px-6 py-5"><span class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><x-admin.icon name="report" size="h-6 w-6" /></span><h3 class="mt-4 text-sm font-bold text-slate-700">Cerita penjualan dimulai di sini</h3><p class="mt-2 text-xs leading-6 text-slate-400">Grafik akan menampilkan performa toko setelah modul transaksi dan penghasilan tersedia.</p></div>
+        <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="sales-title" class="text-sm font-bold text-slate-900">Ringkasan penjualan</h2><p class="mt-1.5 text-xs text-slate-400">Data sesuai periode yang dipilih.</p></div><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-medium text-slate-500">{{ \Illuminate\Support\Carbon::parse($filters['start_date'])->format('d/m/Y') }} — {{ \Illuminate\Support\Carbon::parse($filters['end_date'])->format('d/m/Y') }}</span></div>
+        <div class="mt-6 flex min-h-[240px] flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/40 px-5 py-8 text-center">
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><x-admin.icon name="report" size="h-6 w-6" /></span><h3 class="mt-4 text-sm font-bold text-slate-700">{{ $orderCount ? 'Ringkasan transaksi periode terpilih' : 'Belum ada pesanan pada periode ini' }}</h3><p class="mt-2 max-w-sm text-xs leading-6 text-slate-400">{{ number_format($orderCount, 0, ',', '.') }} pesanan tercatat dengan penghasilan Rp{{ number_format($revenueMinor / 100, 2, ',', '.') }} dari pesanan lunas.</p>
         </div>
-        <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] text-slate-400"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-brand-600"></span>Penghasilan toko</span><span>Data transaksi belum tersedia untuk ditampilkan.</span></div>
+        <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] text-slate-400"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-brand-600"></span>Penghasilan dari pesanan lunas</span><span>Jumlah pesanan mencakup semua status.</span></div>
     </section>
     <section aria-labelledby="category-title" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/20 sm:p-6">
         <div class="flex items-center justify-between gap-3"><h2 id="category-title" class="text-sm font-bold text-slate-900">Komposisi katalog</h2><x-admin.icon name="category" size="h-4 w-4 text-slate-400" /></div><p class="mt-1.5 text-xs text-slate-400">Sebaran produk berdasarkan kategori.</p>

@@ -18,14 +18,35 @@ class Category extends Model
 
     protected function name(): Attribute
     {
-        return Attribute::make(set: fn (string $value): array => [
-            'name' => Str::squish($value),
-            'name_key' => mb_strtolower(Str::squish($value)),
-        ]);
+        return Attribute::make(set: function (string $value): array {
+            $name = Str::squish($value);
+
+            return [
+                'name' => $name,
+                'name_key' => mb_strtolower($name),
+                'slug' => $this->uniqueSlug($name),
+            ];
+        });
     }
 
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    private function uniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name) ?: 'kategori';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (static::query()
+            ->where('slug', $slug)
+            ->when($this->exists, fn ($query) => $query->whereKeyNot($this->getKey()))
+            ->exists()) {
+            $slug = $baseSlug.'-'.$suffix++;
+        }
+
+        return $slug;
     }
 }

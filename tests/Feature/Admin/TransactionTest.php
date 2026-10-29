@@ -9,12 +9,32 @@ it('requires authentication for transactions', function () {
     $this->patch(route('admin.transactions.update', Order::factory()->create()), ['action' => 'pick'])->assertRedirect(route('login'));
 });
 
+it('lets an admin confirm a pending manual payment before fulfillment begins', function () {
+    $order = Order::factory()->create([
+        'status' => 'pending',
+        'payment_method' => 'bank_transfer',
+        'payment_status' => 'pending',
+    ]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->get(route('admin.transactions.index'))
+        ->assertOk()
+        ->assertSee('Menunggu konfirmasi pembayaran')
+        ->assertSee($order->order_number);
+    $this->post(route('admin.transactions.confirm-payment', $order))
+        ->assertRedirect(route('admin.transactions.index'))
+        ->assertSessionHas('success', 'Pembayaran '.$order->order_number.' berhasil dikonfirmasi.');
+
+    expect($order->fresh())->status->toBe('paid')->payment_status->toBe('paid');
+});
+
 it('shows paid orders by stage with search and transaction navigation', function () {
     $paid = Order::factory()->create(['status' => 'paid', 'order_number' => 'SN-PICK-001']);
     OrderItem::factory()->for($paid)->create();
     Order::factory()->create(['status' => 'pending', 'order_number' => 'SN-UNPAID']);
     $this->actingAs(User::factory()->admin()->create())->get(route('admin.transactions.index'))
-        ->assertOk()->assertSee('SN-PICK-001')->assertDontSee('SN-UNPAID')->assertSee('Input Qty Proses')->assertSee('Konfirmasi picking');
+        ->assertOk()->assertSee('SN-PICK-001')->assertSee('SN-UNPAID')->assertSee('Input Qty Proses')->assertSee('Konfirmasi picking')
+        ->assertViewHas('orders', fn ($orders) => $orders->contains('order_number', 'SN-PICK-001') && ! $orders->contains('order_number', 'SN-UNPAID'));
     $this->get(route('admin.transactions.index', ['stage' => 'picking', 'q' => 'missing']))->assertOk()->assertDontSee('SN-PICK-001');
     foreach (['processing', 'packaging', 'shipping'] as $stage) {
         $this->get(route('admin.transactions.index', ['stage' => $stage]))->assertOk()->assertDontSee('SN-PICK-001');

@@ -16,10 +16,19 @@
                     @error($field)<p id="{{ $field }}-error" class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
             @endforeach
+            <div>
+                <label for="role" class="mb-2 block text-xs font-semibold text-slate-600">Jenis akses admin</label>
+                <select id="role" name="role" required aria-invalid="{{ $errors->has('role') ? 'true' : 'false' }}" @error('role') aria-describedby="role-error" @enderror class="w-full rounded-xl border-slate-200 text-sm focus:border-brand-500 focus:ring-brand-500">
+                    @foreach ($adminRoles as $role => $label)
+                        <option value="{{ $role }}" @selected(old('role', \App\Models\User::ADMIN_ROLE) === $role)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('role')<p id="role-error" class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
+            </div>
             <p class="text-xs leading-5 text-slate-500">Gunakan email yang belum terdaftar dan password minimal 8 karakter.</p>
             <div class="flex flex-wrap gap-3 border-t border-slate-100 pt-5"><button type="submit" class="rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-800">Buat akun admin</button><a href="{{ route('admin.admin-accounts.index') }}" class="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50">Batal</a></div>
         </form>
     </section>
-    <aside class="rounded-2xl border border-brand-100 bg-brand-50 p-6"><span class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-700"><x-admin.icon name="shield" /></span><h2 class="text-sm font-bold text-brand-950">Akses pengelola</h2><p class="mt-3 text-xs leading-6 text-brand-900/80">Akun ini mendapat hak admin, termasuk mengelola data customer dan membuat akun admin lainnya.</p><p class="mt-3 text-xs leading-6 text-brand-900/80">Setelah dibuat, admin baru dapat login dengan email dan password yang Anda tentukan. Sampaikan kredensial secara pribadi kepada pemilik akun.</p></aside>
+    <aside class="rounded-2xl border border-brand-100 bg-brand-50 p-6"><span class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-700"><x-admin.icon name="shield" /></span><h2 class="text-sm font-bold text-brand-950">Akses pengelola</h2><p class="mt-3 text-xs leading-6 text-brand-900/80">Administrator penuh memiliki seluruh menu dan hak kelola. Admin pemrosesan transaksi hanya dapat membuka Dashboard, Transaksi, Tema, User, dan Produk.</p><p class="mt-3 text-xs leading-6 text-brand-900/80">Setelah dibuat, admin baru dapat login dengan email dan password yang Anda tentukan. Sampaikan kredensial secara pribadi kepada pemilik akun.</p></aside>
 </div>
 @endsection

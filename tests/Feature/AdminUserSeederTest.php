@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 
 it('creates the configured admin user and assigns the admin role', function () {
     config([
-        'admin.name' => 'Admin SN Store',
+        'admin.name' => 'Admin Apotek Aja',
         'admin.email' => 'admin@sn-store.test',
         'admin.password' => 'secure-admin-password',
     ]);
@@ -17,7 +17,7 @@ it('creates the configured admin user and assigns the admin role', function () {
     $admin = User::query()->where('email', 'admin@sn-store.test')->firstOrFail();
 
     $this->assertModelExists($admin);
-    expect($admin->name)->toBe('Admin SN Store')
+    expect($admin->name)->toBe('Admin Apotek Aja')
         ->and(Hash::check('secure-admin-password', $admin->password))->toBeTrue()
         ->and($admin->hasRole('admin'))->toBeTrue()
         ->and($admin->is_admin)->toBeFalse();
@@ -32,7 +32,7 @@ it('preserves the existing admin password when the seeder runs again', function 
     ]);
     $admin->assignRole('customer');
     config([
-        'admin.name' => 'Admin SN Store',
+        'admin.name' => 'Admin Apotek Aja',
         'admin.email' => 'admin@sn-store.test',
         'admin.password' => 'replacement-admin-password',
     ]);
@@ -48,7 +48,7 @@ it('preserves the existing admin password when the seeder runs again', function 
 
 it('requires a configured secure admin password before creating a user', function () {
     config([
-        'admin.name' => 'Admin SN Store',
+        'admin.name' => 'Admin Apotek Aja',
         'admin.email' => 'admin@sn-store.test',
         'admin.password' => '',
     ]);

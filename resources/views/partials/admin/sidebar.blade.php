@@ -1,6 +1,12 @@
 <aside id="admin-sidebar" aria-label="Navigasi admin" :inert="!desktop && !sidebarOpen" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" @keydown.tab="trapSidebarFocus($event)" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200/80 bg-white transition-transform duration-200 lg:translate-x-0">
     <div class="flex h-20 shrink-0 items-center justify-between border-b border-slate-100 px-6">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5" aria-label="SN Store dashboard"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-700 text-xl font-black tracking-tighter text-white">sn<span class="text-brand-200">+</span></span><span class="text-xl font-extrabold tracking-tight">sn<span class="text-brand-700">-store</span><span class="mt-0.5 block text-[9px] font-semibold uppercase tracking-[.22em] text-slate-400">Admin workspace</span></span></a>
+        <a href="{{ route('dashboard') }}" class="flex items-center" aria-label="{{ $storeName }} dashboard">
+            @if ($storeLogoUrl)
+                <img src="{{ $storeLogoUrl }}" alt="{{ $storeName }}" class="h-10 max-w-44 object-contain">
+            @else
+                <span class="text-xl font-extrabold tracking-tight">{{ $storeName }}</span>
+            @endif
+        </a>
         <button x-ref="sidebarClose" @click="closeSidebar()" aria-label="Tutup menu" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-50 lg:hidden"><x-admin.icon name="close" size="h-4 w-4" /></button>
     </div>
     <div class="flex-1 overflow-y-auto px-4 py-6">
@@ -10,9 +16,9 @@
                 ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => 'dashboard', 'pattern' => 'dashboard'],
                 ['label' => 'Kategori', 'icon' => 'category', 'route' => 'admin.categories.index', 'pattern' => 'admin.categories.*', 'permission' => 'view categories'],
                 ['label' => 'Produk', 'icon' => 'product', 'route' => 'admin.products.index', 'pattern' => 'admin.products.*', 'permission' => 'view products'],
-                ['label' => 'Promosi', 'icon' => 'promotion', 'route' => null],
+                ['label' => 'Promosi', 'icon' => 'promotion', 'route' => 'admin.promotions.index', 'pattern' => 'admin.promotions.*', 'permission' => 'view promotions'],
+                ['label' => 'Ads', 'icon' => 'ads', 'route' => 'admin.ads.index', 'pattern' => 'admin.ads.*', 'permission' => 'view ads'],
                 ['label' => 'Transaksi', 'icon' => 'transaction', 'route' => null, 'permission' => 'view transactions'],
-                ['label' => 'Penghasilan', 'icon' => 'income', 'route' => null],
                 ['label' => 'Laporan', 'icon' => 'report', 'route' => 'admin.reports.index', 'pattern' => 'admin.reports.*', 'permission' => 'view reports'],
                 ['label' => 'User', 'icon' => 'users', 'route' => 'admin.users.index', 'pattern' => 'admin.users.*', 'permission' => 'manage customers'],
                 ['label' => 'Akun Admin', 'icon' => 'shield', 'route' => 'admin.admin-accounts.index', 'pattern' => 'admin.admin-accounts.*', 'permission' => 'manage admin accounts'],

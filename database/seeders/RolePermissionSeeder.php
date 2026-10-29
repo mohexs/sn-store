@@ -23,6 +23,10 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'view products',
             'manage products',
+            'view promotions',
+            'manage promotions',
+            'view ads',
+            'manage ads',
             'view transactions',
             'manage transactions',
             'view reports',
@@ -31,8 +35,19 @@ class RolePermissionSeeder extends Seeder
             'manage customers',
         ])->map(fn (string $name): Permission => Permission::findOrCreate($name, 'web'));
 
-        $adminRole = Role::findOrCreate('admin', 'web');
+        $adminRole = Role::findOrCreate(User::ADMIN_ROLE, 'web');
         $adminRole->syncPermissions($permissions);
+
+        $transactionProcessingAdminRole = Role::findOrCreate(User::TRANSACTION_PROCESSING_ADMIN_ROLE, 'web');
+        $transactionProcessingAdminRole->syncPermissions([
+            'access admin',
+            'view products',
+            'manage products',
+            'view transactions',
+            'manage transactions',
+            'view themes',
+            'manage customers',
+        ]);
 
         $customerRole = Role::findOrCreate('customer', 'web');
         $customerRole->syncPermissions([]);

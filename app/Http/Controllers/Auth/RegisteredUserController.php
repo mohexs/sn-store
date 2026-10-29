@@ -3,16 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Http\Requests\Auth\StoreRegisteredUserRequest;
+use App\Services\Auth\AuthenticationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -24,29 +18,10 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request): RedirectResponse
+    /** Handle an incoming registration request. */
+    public function store(StoreRegisteredUserRequest $request, AuthenticationService $service): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-        $user->assignRole(Role::findOrCreate('customer', 'web'));
-
-        event(new Registered($user));
-
-        Auth::login($user);
+        $service->register($request->validated());
 
         return redirect()->route('home');
     }

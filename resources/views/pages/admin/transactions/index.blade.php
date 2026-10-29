@@ -10,6 +10,19 @@
 </nav>
 @if (session('success'))<div role="status" class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{{ session('success') }}</div>@endif
 @if ($errors->any())<div role="alert" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"><ul class="list-disc pl-4">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+@if ($stage === 'picking' && $pendingPayments->isNotEmpty())
+    <section aria-labelledby="pending-payments-title" class="mb-6 overflow-hidden rounded-2xl border border-amber-200 bg-white">
+        <div class="border-b border-amber-100 bg-amber-50 px-5 py-4"><h2 id="pending-payments-title" class="text-sm font-bold text-amber-900">Menunggu konfirmasi pembayaran</h2><p class="mt-1 text-xs text-amber-800">Pastikan pembayaran transfer diterima sebelum mengonfirmasi pesanan.</p></div>
+        <div class="divide-y divide-slate-100">
+            @foreach ($pendingPayments as $pendingOrder)
+                <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+                    <div><p class="text-sm font-semibold text-slate-800">{{ $pendingOrder->order_number }} · {{ $pendingOrder->customer_name }}</p><p class="mt-1 text-xs text-slate-500">{{ $pendingOrder->items->sum('quantity') }} barang · Total Rp{{ number_format($pendingOrder->total_minor / 100, 0, ',', '.') }}</p></div>
+                    <form method="POST" action="{{ route('admin.transactions.confirm-payment', $pendingOrder) }}" onsubmit="return confirm('Pastikan dana sudah diterima sebelum mengonfirmasi pembayaran. Lanjutkan?')">@csrf<button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-800">Konfirmasi pembayaran</button></form>
+                </div>
+            @endforeach
+        </div>
+    </section>
+@endif
 <form method="GET" action="{{ route('admin.transactions.index', ['stage' => $stage]) }}" class="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-5">
     <div class="min-w-[200px] flex-1"><x-admin.form-input name="q" label="Cari pesanan" :value="$keyword" placeholder="Nomor pesanan atau nama pelanggan" maxlength="100" /></div><button class="rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-800">Cari</button><a href="{{ route('admin.transactions.index', ['stage' => $stage]) }}" class="rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-600">Reset</a>
 </form>

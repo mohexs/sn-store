@@ -53,10 +53,16 @@ it('paginates customers and preserves the search', function () {
 
 it('shows the saved customer profile', function () {
     $admin = User::factory()->admin()->create();
-    $customer = User::factory()->create(['address' => '<script>unsafe</script>', 'city' => 'Makassar']);
+    $customer = User::factory()->create([
+        'address' => '<script>unsafe</script>',
+        'city' => 'Makassar',
+        'created_at' => '2026-03-04 15:06:00',
+        'updated_at' => '2026-03-05 09:07:00',
+    ]);
 
     $this->actingAs($admin)->get(route('admin.users.edit', $customer))->assertOk()
-        ->assertSee($customer->email)->assertSee($customer->address)->assertDontSee($customer->address, escape: false)->assertSee('Makassar');
+        ->assertSee($customer->email)->assertSee($customer->address)->assertDontSee($customer->address, escape: false)
+        ->assertSee('Makassar')->assertSee('04/03/2026 15:06')->assertSee('05/03/2026 09:07');
 });
 
 it('updates customer details without changing privileged fields', function () {

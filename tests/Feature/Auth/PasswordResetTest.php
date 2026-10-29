@@ -72,7 +72,7 @@ test('admin and customer reset requests deliver an email containing the reset li
     expect($messages)->toHaveCount(1);
     $email = $messages->first()->getOriginalMessage();
     expect($email->getTo()[0]->getAddress())->toBe($user->email);
-    expect($email->getSubject())->toBe('Reset password akun SN Store');
+    expect($email->getSubject())->toBe('Reset password akun Apotek Aja');
     expect($email->getHtmlBody())->toContain('/reset-password/')->toContain(urlencode($user->email))->toContain('60 menit');
 })->with(['admin' => true, 'customer' => false]);
 

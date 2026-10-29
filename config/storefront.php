@@ -3,6 +3,12 @@
 return [
     'categories' => ['Obat-obatan', 'Vitamin & Suplemen', 'Alat Kesehatan', 'Perawatan Diri'],
 
+    'hero_slides' => [
+        ['eyebrow' => 'LANGKAH KECIL, HIDUP LEBIH SEHAT', 'title' => 'Kesehatan Anda,', 'accent' => 'prioritas kami.', 'copy' => 'Lengkapi kebutuhan sehat Anda dan keluarga. Jelajahi pilihan obat, vitamin, dan alat kesehatan dalam satu tempat.', 'image' => 'hero-health.svg'],
+        ['eyebrow' => 'RUTINITAS SEHAT DIMULAI DI SINI', 'title' => 'Rawat diri hari ini,', 'accent' => 'nikmati esok hari.', 'copy' => 'Temukan pilihan vitamin dan suplemen untuk melengkapi kebutuhan harian Anda.', 'image' => 'hero-vitamins.svg'],
+        ['eyebrow' => 'PEDULI KESEHATAN KELUARGA', 'title' => 'Lebih siap menjaga', 'accent' => 'yang tersayang.', 'copy' => 'Lengkapi persediaan perawatan dan alat kesehatan untuk kebutuhan di rumah.', 'image' => 'hero-care.svg'],
+    ],
+
     'products' => [
         ['id' => 1, 'name' => 'Vitamin C 500 mg', 'category' => 'Vitamin & Suplemen', 'price' => 45000, 'unit' => 'Botol · 30 tablet', 'color' => '#ed9d26', 'type' => 'bottle'],
         ['id' => 2, 'name' => 'Termometer Digital', 'category' => 'Alat Kesehatan', 'price' => 65000, 'unit' => '1 unit', 'color' => '#53a9b5', 'type' => 'device'],

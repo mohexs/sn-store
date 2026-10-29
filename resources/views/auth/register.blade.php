@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Daftar — SN Store')
+@section('title', 'Daftar — '.$storeName)
 
 @section('content')
 <section class="mx-auto grid min-h-[65vh] max-w-7xl items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-20">
@@ -11,18 +11,21 @@
                 <span class="h-1.5 w-1.5 rounded-full bg-rose-200"></span>
                 Bergabung bersama kami
             </span>
-            <h1 class="mt-8 max-w-md text-4xl font-extrabold leading-tight tracking-tight">Mulai langkah sehat Anda bersama SN Store.</h1>
+            <h1 class="mt-8 max-w-md text-4xl font-extrabold leading-tight tracking-tight">Mulai langkah sehat Anda bersama {{ $storeName }}.</h1>
             <p class="mt-5 max-w-md text-sm leading-7 text-rose-100">Buat akun untuk menjelajahi pilihan kebutuhan kesehatan untuk Anda dan keluarga.</p>
         </div>
-        <div class="relative flex items-center gap-3">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-xl font-black text-rose-700">sn<span class="text-rose-300">+</span></span>
-            <span class="text-sm font-semibold tracking-wide">SN STORE <span class="text-rose-200">/</span> HEALTH & CARE</span>
+        <div class="relative">
+            @if ($storeLogoUrl)
+                <img src="{{ $storeLogoUrl }}" alt="{{ $storeName }}" class="h-12 max-w-56 rounded-lg bg-white p-1 object-contain">
+            @else
+                <span class="text-sm font-semibold tracking-wide">{{ mb_strtoupper($storeName) }}</span>
+            @endif
         </div>
     </div>
 
     <div class="mx-auto w-full max-w-md">
         <div class="mb-8">
-            <p class="text-xs font-bold uppercase tracking-[.2em] text-rose-700">Akun SN Store</p>
+            <p class="text-xs font-bold uppercase tracking-[.2em] text-rose-700">Akun {{ $storeName }}</p>
             <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Buat akun baru</h2>
             <p class="mt-3 text-sm leading-6 text-slate-500">Daftar dengan mengisi informasi akun Anda.</p>
         </div>
@@ -56,7 +59,7 @@
 
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-rose-700 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-rose-800 focus-visible:outline-rose-700">
                 Daftar
-                <span class="ml-2" aria-hidden="true">↗</span>
+                <svg class="ml-2 h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M7 7h10v10"/></svg>
             </button>
         </form>
 

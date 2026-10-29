@@ -15,6 +15,10 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public const ADMIN_ROLE = 'admin';
+
+    public const TRANSACTION_PROCESSING_ADMIN_ROLE = 'admin-pemrosesan-transaksi';
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 

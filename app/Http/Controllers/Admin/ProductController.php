@@ -3,88 +3,84 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DeleteProductRequest;
+use App\Http\Requests\Admin\ExportProductsRequest;
+use App\Http\Requests\Admin\ShowProductPhotoRequest;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
-use App\Models\Category;
 use App\Models\Product;
+use App\Services\Admin\ProductService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Throwable;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(ProductService $service): View
     {
-        return view('pages.admin.products.index', [
-            'products' => Product::query()->with('category')->latest('id')->paginate(10),
-        ]);
+        return view('pages.admin.products.index', ['products' => $service->paginate()]);
     }
 
-    public function create(): View
+    public function export(ExportProductsRequest $request, ProductService $service): StreamedResponse
+    {
+        return $service->exportCsv();
+    }
+
+    public function create(ProductService $service): View
     {
         return view('pages.admin.products.create', [
             'product' => new Product,
-            'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
+            'categories' => $service->categories(),
+            'variations' => [],
         ]);
     }
 
-    public function store(StoreProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request, ProductService $service): RedirectResponse
     {
-        $this->saveProduct(new Product, $request->safe()->except('photo'), $request->file('photo'));
+        $service->create($request->safe()->only([
+            'sku', 'name', 'description', 'category_id', 'weight', 'length', 'width',
+            'height', 'price', 'barcode', 'rack_location', 'principal_name', 'variations',
+        ]), $request->file('photo'));
 
         return to_route('admin.products.index')->with('status', 'Produk berhasil ditambahkan.');
     }
 
-    public function edit(Product $product): View
+    public function edit(Product $product, ProductService $service): View
     {
         return view('pages.admin.products.edit', [
             'product' => $product,
-            'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
+            'categories' => $service->categories(),
+            'variations' => $service->variations($product),
         ]);
     }
 
-    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
+    public function update(UpdateProductRequest $request, Product $product, ProductService $service): RedirectResponse
     {
-        $this->saveProduct($product, $request->safe()->except('photo'), $request->file('photo'));
+        $service->update($product, $request->safe()->only([
+            'sku', 'name', 'description', 'category_id', 'weight', 'length', 'width',
+            'height', 'price', 'barcode', 'rack_location', 'principal_name', 'variations',
+        ]), $request->file('photo'));
 
         return to_route('admin.products.index')->with('status', 'Produk berhasil diperbarui.');
     }
 
-    /** @param array<string, mixed> $data */
-    private function saveProduct(Product $product, array $data, ?UploadedFile $photo): void
+    public function destroy(DeleteProductRequest $request, Product $product, ProductService $service): RedirectResponse
     {
-        $oldPhoto = $product->photo_path;
-        $newPhoto = null;
+        $service->delete($product);
 
-        if ($photo !== null) {
-            $newPhoto = $photo->store('products', 'public');
+        return to_route('admin.products.index')->with('status', 'Produk berhasil dihapus.');
+    }
 
-            if ($newPhoto === false) {
-                throw ValidationException::withMessages(['photo' => 'Foto gagal disimpan. Silakan coba kembali.']);
-            }
-        }
+    public function photo(ShowProductPhotoRequest $request, Product $product, ProductService $service): BinaryFileResponse
+    {
+        $photo = $service->photo($product);
+        abort_unless($photo !== null, 404);
 
-        try {
-            $product->fill($data);
-
-            if ($newPhoto !== null) {
-                $product->photo_path = $newPhoto;
-            }
-
-            $product->saveOrFail();
-        } catch (Throwable $exception) {
-            if ($newPhoto !== null) {
-                Storage::disk('public')->delete($newPhoto);
-            }
-
-            throw $exception;
-        }
-
-        if ($newPhoto !== null && $oldPhoto !== null) {
-            Storage::disk('public')->delete($oldPhoto);
-        }
+        return response()->file($photo['path'], [
+            'Content-Type' => $photo['mime_type'],
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }

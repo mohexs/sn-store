@@ -18,7 +18,7 @@
                 <td class="px-6 py-4"><p class="font-semibold text-slate-800">{{ $customer->name }}</p><p class="mt-1 text-slate-400">User #{{ $customer->id }}</p></td>
                 <td class="px-6 py-4"><p>{{ $customer->email }}</p><p class="mt-1 text-slate-500">{{ $customer->phone ?: 'Telepon belum diisi' }}</p><span class="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-600">{{ $customer->email_verified_at ? 'Email terverifikasi' : 'Email belum terverifikasi' }}</span></td>
                 <td class="min-w-[200px] max-w-xs px-6 py-4"><p class="line-clamp-2 text-slate-600">{{ $customer->address ?: 'Alamat belum diisi' }}</p><p class="mt-1 text-slate-400">{{ collect([$customer->city, $customer->province, $customer->postal_code])->filter()->implode(', ') }}</p></td>
-                <td class="whitespace-nowrap px-6 py-4 text-slate-500">{{ $customer->created_at?->format('d M Y') ?? '—' }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-slate-500">{{ $customer->created_at?->format('d/m/Y') ?? '—' }}</td>
                 <td class="px-6 py-4 text-right"><a href="{{ route('admin.users.edit', $customer) }}" aria-label="Detail profil {{ $customer->name }}" class="inline-flex whitespace-nowrap rounded-lg border border-brand-100 px-3 py-2 font-semibold text-brand-700 hover:bg-brand-50">Detail & edit</a></td>
             </tr>
         @empty

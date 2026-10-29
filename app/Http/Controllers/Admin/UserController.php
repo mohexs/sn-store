@@ -4,52 +4,35 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Http\Requests\Admin\UserIndexRequest;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\Admin\UserService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(Request $request): View
+    public function index(UserIndexRequest $request, UserService $service): View
     {
-        $filters = $request->validate(['search' => ['nullable', 'string', 'max:100']]);
-        $search = trim($filters['search'] ?? '');
+        $search = $request->validated('search', '');
 
         return view('pages.admin.users.index', [
             'search' => $search,
-            'users' => User::query()->where('is_admin', false)
-                ->whereDoesntHave('roles', fn (Builder $roles) => $roles->where('name', 'admin')->where('guard_name', 'web'))
-                ->when($search !== '', function (Builder $query) use ($search): void {
-                    $query->where(function (Builder $query) use ($search): void {
-                        $query->whereLike('name', '%'.$search.'%')
-                            ->orWhereLike('email', '%'.$search.'%')
-                            ->orWhereLike('phone', '%'.$search.'%')
-                            ->orWhereLike('city', '%'.$search.'%');
-                    });
-                })
-                ->latest('id')->paginate(10)->withQueryString(),
+            'users' => $service->paginate($search),
         ]);
     }
 
-    public function edit(User $user): View
+    public function edit(User $user, UserService $service): View
     {
-        abort_if($user->is_admin || $user->hasRole('admin'), 404);
+        $service->assertCustomer($user);
 
         return view('pages.admin.users.edit', ['customer' => $user]);
     }
 
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user, UserService $service): RedirectResponse
     {
-        abort_if($user->is_admin || $user->hasRole('admin'), 404);
-        $user->fill($request->validated());
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $service->assertCustomer($user);
+        $service->update($user, $request->validated());
 
         return to_route('admin.users.edit', $user)->with('status', 'Profil customer berhasil diperbarui.');
     }

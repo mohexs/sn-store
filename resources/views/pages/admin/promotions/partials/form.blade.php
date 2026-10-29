@@ -1,0 +1,23 @@
+@if ($errors->any())
+    <div role="alert" class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-800"><p class="font-bold">Program diskon belum berhasil disimpan.</p><ul class="mt-2 list-disc pl-5 text-xs leading-6">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+@endif
+<div class="grid items-start gap-6 xl:grid-cols-3">
+    <section aria-labelledby="promotion-details-title" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/20 sm:p-6 xl:col-span-2">
+        <div class="mb-6 border-b border-slate-100 pb-5"><h2 id="promotion-details-title" class="text-sm font-bold text-slate-900">Informasi program</h2><p class="mt-1 text-xs text-slate-400">Tentukan identitas dan jenis diskon.</p></div>
+        <div class="grid gap-5 sm:grid-cols-2">
+            <label for="name" class="text-xs font-semibold text-slate-600 sm:col-span-2">Nama program<input id="name" name="name" type="text" required maxlength="255" value="{{ old('name', $promotion->name) }}" placeholder="Contoh: Promo akhir tahun" class="mt-2 w-full rounded-xl border-slate-200 px-3.5 py-3 text-sm font-normal text-slate-700 focus:border-brand-500 focus:ring-brand-500"></label>
+            <label for="discount_type" class="text-xs font-semibold text-slate-600">Jenis diskon<select id="discount_type" name="discount_type" required class="mt-2 w-full rounded-xl border-slate-200 bg-white px-3.5 py-3 text-sm font-normal text-slate-700 focus:border-brand-500 focus:ring-brand-500"><option value="fixed" @selected(old('discount_type', $promotion->discount_type) === 'fixed')>Potongan harga (Rp)</option><option value="percentage" @selected(old('discount_type', $promotion->discount_type) === 'percentage')>Diskon persentase (%)</option></select></label>
+            <label for="discount_value" class="text-xs font-semibold text-slate-600">Nilai diskon<input id="discount_value" name="discount_value" type="number" required min="0.01" max="999999999999.99" step="0.01" value="{{ old('discount_value', $promotion->discount_value) }}" placeholder="Contoh: 10000 atau 15" class="mt-2 w-full rounded-xl border-slate-200 px-3.5 py-3 text-sm font-normal text-slate-700 focus:border-brand-500 focus:ring-brand-500"><span class="mt-1 block text-[10px] font-normal text-slate-400">Diskon persentase maksimal 100%.</span></label>
+            <label for="description" class="text-xs font-semibold text-slate-600 sm:col-span-2">Deskripsi <span class="font-normal text-slate-400">(opsional)</span><textarea id="description" name="description" rows="4" maxlength="10000" placeholder="Keterangan singkat program diskon" class="mt-2 w-full rounded-xl border-slate-200 px-3.5 py-3 text-sm font-normal text-slate-700 focus:border-brand-500 focus:ring-brand-500">{{ old('description', $promotion->description) }}</textarea></label>
+        </div>
+    </section>
+    <section aria-labelledby="promotion-period-title" class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/20 sm:p-6">
+        <div class="mb-6 border-b border-slate-100 pb-5"><h2 id="promotion-period-title" class="text-sm font-bold text-slate-900">Periode aktif</h2><p class="mt-1 text-xs leading-5 text-slate-400">Status dihitung otomatis dari waktu mulai dan berakhir.</p></div>
+        <div class="flex flex-col gap-5">
+            <x-admin.form-input name="starts_at" label="Mulai" type="datetime-local" :value="$promotion->starts_at?->format('Y-m-d\TH:i')" :required="true" />
+            <x-admin.form-input name="ends_at" label="Berakhir" type="datetime-local" :value="$promotion->ends_at?->format('Y-m-d\TH:i')" :required="true" />
+        </div>
+        <p class="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-[11px] leading-5 text-brand-900/70">Akan datang sebelum periode dimulai, berjalan selama periode aktif, dan selesai otomatis setelah waktu berakhir.</p>
+    </section>
+</div>
+<div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:px-6"><p class="text-xs leading-6 text-slate-400">{{ $promotion->exists ? 'Perubahan akan memperbarui program diskon ini.' : 'Program diskon akan tersimpan dan mengikuti periode yang Anda atur.' }}</p><div class="flex items-center gap-3"><a href="{{ route('admin.promotions.index') }}" class="rounded-xl border border-slate-200 px-5 py-3 text-xs font-semibold text-slate-600 hover:bg-slate-50">Batal</a><button type="submit" class="rounded-xl bg-brand-700 px-5 py-3 text-xs font-bold text-white transition hover:bg-brand-800">{{ $promotion->exists ? 'Simpan perubahan' : 'Simpan program' }}</button></div></div>

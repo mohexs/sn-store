@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="id" data-admin-theme="rose" data-theme-storage-key="sn-store-admin-theme-{{ auth()->id() }}">
+<html lang="id" data-admin-theme="rose" data-admin-mode="light" data-theme-storage-key="sn-store-admin-theme-{{ auth()->id() }}" data-mode-storage-key="sn-store-admin-mode-{{ auth()->id() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#be123c">
-    <title>@yield('title', 'Dashboard') · Admin SN Store</title>
+    <title>@yield('title', 'Dashboard') · Admin {{ $storeName }}</title>
     @include('partials.admin.theme-bootstrap')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -18,7 +18,7 @@
         <main id="admin-content" class="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-7 lg:px-8 lg:py-8" tabindex="-1">
             @yield('content')
         </main>
-        <footer class="mx-auto flex w-full max-w-[1600px] flex-wrap justify-between gap-2 px-4 pb-6 text-[11px] text-slate-400 sm:px-7 lg:px-8"><p>© {{ date('Y') }} SN Store. Semua hak dilindungi.</p><p>Ruang kelola untuk langkah sehat yang lebih baik.</p></footer>
+        <footer class="mx-auto flex w-full max-w-[1600px] flex-wrap justify-between gap-2 px-4 pb-6 text-[11px] text-slate-400 sm:px-7 lg:px-8"><p>© {{ date('Y') }} {{ $storeName }}. Semua hak dilindungi.</p><p>Ruang kelola untuk langkah sehat yang lebih baik.</p></footer>
     </div>
 </body>
 </html>

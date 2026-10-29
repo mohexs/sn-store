@@ -4,7 +4,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Carbon;
+use Spatie\Permission\Models\Role;
 
 function createReportOrder(string $date, array $lines, string $status = 'paid', array $attributes = []): Order
 {
@@ -17,8 +19,131 @@ function createReportOrder(string $date, array $lines, string $status = 'paid', 
     return $order;
 }
 
+/**
+ * @return array{0: array<int, string>, 1: array<int, array<int, string>>}
+ */
+function parseReportCsv(string $contents): array
+{
+    $lines = array_values(array_filter(explode("\r\n", substr($contents, 3)), fn (string $line): bool => $line !== ''));
+    $headers = str_getcsv(array_shift($lines));
+
+    return [$headers, array_map(fn (string $line): array => str_getcsv($line), $lines)];
+}
+
 it('requires authentication before showing sales reports', function () {
     $this->get(route('admin.reports.index'))->assertRedirect(route('login'));
+    $this->get(route('admin.reports.export'))->assertRedirect(route('login'));
+});
+
+it('exports every daily subreport row for the selected date range without pagination', function () {
+    $user = User::factory()->admin()->create();
+
+    for ($day = 1; $day <= 16; $day++) {
+        createReportOrder(sprintf('2026-10-%02d', $day), [['unit_price_minor' => 101]]);
+    }
+
+    createReportOrder('2026-10-01', [['unit_price_minor' => 999999]], 'pending');
+    createReportOrder('2026-10-17', [['unit_price_minor' => 999999]]);
+
+    $response = $this->actingAs($user)->get(route('admin.reports.export', [
+        'type' => 'daily',
+        'start_date' => '2026-10-01',
+        'end_date' => '2026-10-16',
+        'page' => 2,
+    ]));
+
+    $response->assertOk()->assertDownload('laporan-daily-2026-10-01-sampai-2026-10-16.csv');
+    expect($response->streamedContent())->toStartWith("\xEF\xBB\xBF");
+
+    [$headers, $rows] = parseReportCsv($response->streamedContent());
+    $dateIndex = array_search('tanggal', $headers, true);
+    $netIndex = array_search('penjualan_bersih_rupiah', $headers, true);
+    expect($rows)->toHaveCount(16)
+        ->and(array_column($rows, $dateIndex))->toContain('2026-10-01')
+        ->and($rows[0][$netIndex])->toBe('1.01');
+});
+
+it('exports product subreport rows using the selected search and sort filters', function () {
+    $user = User::factory()->admin()->create();
+    createReportOrder('2026-10-01', [
+        ['product_name' => '=Alpha', 'product_sku' => 'SN-EX-1', 'quantity' => 1, 'unit_price_minor' => 3000],
+        ['product_name' => 'Beta', 'product_sku' => 'SN-EX-2', 'quantity' => 2, 'unit_price_minor' => 1000],
+        ['product_name' => 'Diabaikan', 'product_sku' => 'OTHER', 'quantity' => 1, 'unit_price_minor' => 9000],
+    ]);
+
+    $filters = [
+        'type' => 'products',
+        'start_date' => '2026-10-01',
+        'end_date' => '2026-10-01',
+        'q' => 'SN-EX',
+        'sort' => 'name',
+    ];
+    $response = $this->actingAs($user)->get(route('admin.reports.export', $filters));
+
+    $response->assertOk()->assertDownload('laporan-products-2026-10-01-sampai-2026-10-01.csv');
+    [$headers, $rows] = parseReportCsv($response->streamedContent());
+    $nameIndex = array_search('nama_produk', $headers, true);
+    $skuIndex = array_search('sku_saat_transaksi', $headers, true);
+
+    expect(array_column($rows, $nameIndex))->toBe(["'=Alpha", 'Beta'])
+        ->and(array_column($rows, $skuIndex))->toBe(['SN-EX-1', 'SN-EX-2']);
+
+    $this->get(route('admin.reports.index', $filters))
+        ->assertOk()
+        ->assertSee(route('admin.reports.export', $filters));
+});
+
+it('exports all order detail lines matching the selected customer filter', function () {
+    $user = User::factory()->admin()->create();
+    createReportOrder('2026-10-01', [
+        ['product_name' => '=Formula', 'product_sku' => 'SN-ORD-1', 'quantity' => 2, 'unit_price_minor' => 1000, 'discount_minor' => 100],
+        ['product_name' => 'Produk kedua', 'product_sku' => 'SN-ORD-2', 'quantity' => 1, 'unit_price_minor' => 5000],
+    ], attributes: ['order_number' => 'SN-ORDER-01', 'customer_name' => 'Pelanggan Pilihan']);
+    createReportOrder('2026-10-02', [['unit_price_minor' => 900000]], attributes: ['customer_name' => 'Pelanggan Lain']);
+
+    $response = $this->actingAs($user)->get(route('admin.reports.export', [
+        'type' => 'orders',
+        'start_date' => '2026-10-01',
+        'end_date' => '2026-10-02',
+        'q' => 'Pelanggan Pilihan',
+    ]));
+
+    $response->assertOk()->assertDownload('laporan-orders-2026-10-01-sampai-2026-10-02.csv');
+    [$headers, $rows] = parseReportCsv($response->streamedContent());
+    $numberIndex = array_search('nomor_pesanan', $headers, true);
+    $customerIndex = array_search('nama_pelanggan', $headers, true);
+    $nameIndex = array_search('nama_produk', $headers, true);
+    $netIndex = array_search('total_pesanan_bersih_rupiah', $headers, true);
+
+    expect($rows)->toHaveCount(2)
+        ->and(array_column($rows, $numberIndex))->toBe(['SN-ORDER-01', 'SN-ORDER-01'])
+        ->and(array_column($rows, $customerIndex))->toBe(['Pelanggan Pilihan', 'Pelanggan Pilihan'])
+        ->and($rows[0][$nameIndex])->toBe("'=Formula")
+        ->and($rows[0][$netIndex])->toBe('69.00');
+});
+
+it('requires the report permission before exporting reports', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $readerRole = Role::create(['name' => 'report-reader', 'guard_name' => 'web']);
+    $readerRole->givePermissionTo('view reports');
+    $reader = User::factory()->create();
+    $reader->assignRole($readerRole);
+    $customer = User::factory()->create();
+
+    $this->actingAs($reader)->get(route('admin.reports.export', ['type' => 'daily']))
+        ->assertDownload('laporan-daily-'.now('Asia/Makassar')->startOfMonth()->toDateString().'-sampai-'.now('Asia/Makassar')->toDateString().'.csv');
+    $this->actingAs($customer)->get(route('admin.reports.export'))->assertForbidden();
+});
+
+it('rejects invalid filters before starting a report export', function () {
+    $user = User::factory()->admin()->create();
+
+    $this->actingAs($user)->get(route('admin.reports.export', [
+        'type' => 'products',
+        'start_date' => 'not-a-date',
+        'end_date' => '2026-10-01',
+    ]))->assertRedirect()
+        ->assertSessionHasErrors('start_date');
 });
 
 it('aggregates daily sales with inclusive dates and excludes unpaid orders', function () {
